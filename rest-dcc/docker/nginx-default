@@ -1,0 +1,19 @@
+server {
+    listen 8443 default ssl;
+    server_name FQDN;
+    ssl_certificate /etc/nginx/certs/FQDN.crt;
+    ssl_certificate_key /etc/nginx/certs/FQDN.key;
+    add_header Strict-Transport-Security max-age=2592000;
+
+    location / {
+      proxy_set_header        Host $host;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+
+      proxy_pass          http://localhost:8088;
+      proxy_read_timeout  90;
+    }
+}
+
+

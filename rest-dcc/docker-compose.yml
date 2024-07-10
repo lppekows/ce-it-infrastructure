@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+
+  rest-dcc:
+    init: true
+    container_name: rest-dcc
+    build:
+      dockerfile: docker/Dockerfile
+      args:
+        MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+        MARIADB_DATABASE: ${MARIADB_DATABASE}
+        MARIADB_USER: ${MARIADB_USER}
+        MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+        MARIADB_USER2: ${MARIADB_USER2}
+        MARIADB_PASSWORD2: ${MARIADB_PASSWORD2}
+        FQDN: ${FQDN}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_USER2: ${MARIADB_USER2}
+      MARIADB_PASSWORD2: ${MARIADB_PASSWORD2}
+      FQDN: ${FQDN}
+    ports:
+      - 8443:8443
+
