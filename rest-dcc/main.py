@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from fastapi import FastAPI
+import os
 
 # Useful examples at 
 # https://mariadb.com/resources/blog/using-sqlalchemy-with-mariadb-connector-python-part-1/
@@ -15,9 +16,9 @@ import tables
 url = URL.create(
     drivername="mariadb",
     username="root",
-    password="abcde",
-    host="127.0.0.1",
-    database="dcc",
+    password=os.environ["MARIADB_ROOT_PASSWORD"],
+    host=os.environ["FQDN"],
+    database=os.environ["MARIADB_DATABASE"],
     port=3306
 )
 
