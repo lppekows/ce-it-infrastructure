@@ -6,7 +6,7 @@ FQDN=$1
 if [ ! -e surcCA.pem ]
 then
     openssl genrsa -des3 -out surcCA.key 2048
-    openssl req -x509 -new -nodes -key surcCA.key -subj "/C=US/ST=NY/O=SU Researach Computing/CN=${FQDN}" -sha256 -days 1825 -out surcCA.pem
+    openssl req -x509 -new -nodes -key surcCA.key -subj "/C=US/ST=NY/O=SU Research Computing/CN=${FQDN}" -sha256 -days 1825 -out surcCA.pem
 fi
 
 # Create a server key
