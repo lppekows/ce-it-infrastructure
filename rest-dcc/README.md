@@ -12,9 +12,10 @@ bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda3
 eval "$(${HOME}/miniconda3/bin/conda shell.bash hook)"
 
 conda create --name dcc
-conda activate dcc
-conda install conda-forge::sqlalchemy conda-forge::sqlacodegen conda-forge::fastapi conda-forge:mariadb conda-forge::mysqlclient conda-forge::uvicorn
+conda create --name dcc conda-forge::sqlalchemy conda-forge::sqlacodegen conda-forge::fastapi conda-forge:mariadb conda-forge::mysqlclient conda-forge::uvicorn conda-forge::mysql-client=8.4.2
 ```
+
+Note that version 8.4.2 is needed as later versions drop support for password authentication.
 
 To regenerate `tables.py` if needed (for example if the schema changes)
 
