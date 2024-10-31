@@ -26,7 +26,7 @@ class RESTHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/json')
         self.end_headers()
 
-        outs = json.dumps(data, separators=(',', ':'))
+        outs = json.dumps(data, separators=(',', ':'), default=str)
         self.wfile.write(outs.encode('utf-8'))
 
     def send_success(self, data):
@@ -71,9 +71,8 @@ def makeGET(conn):
         cur.execute(f"SELECT * FROM {table_name} {where}")
         result = cur.fetchall()
 
-        print(f"json: {json.dumps(result,default=str)}")
-
-        self.send_success(json.dumps(result,default=str))
+        print(f"{json.dumps(result,default=str)}")
+        self.send_success(result) 
 
     return do_GET
 
