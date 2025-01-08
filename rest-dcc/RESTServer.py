@@ -8,6 +8,25 @@ import json
 import urllib.parse
 import mariadb
 
+class ConnectionManager:
+    def __init__(self, envirot):
+        self.user     = "root"
+        self.password = environ["MARIADB_ROOT_PASSWORD"]
+        self.host     = environ["FQDN"]
+        self.database = environ["MARIADB_DATABASE"]
+        self.port     = 3306
+    
+    def getConnection(self):
+        conn = mariadb.connect(
+                user     = self.user,
+                pasword  = self.password = os.environ["MARIADB_ROOT_PASSWORD"],
+                host     = self.host,
+                database = self.database,
+                port     = self.port
+        )
+ 
+        return conn
+
 class RESTHandler(BaseHTTPRequestHandler):
     def send_result(self, status, data):
         self.send_response(status)
@@ -45,7 +64,7 @@ def format_value(v):
     except:
         return f'"{v}"'
 
-def makeGETorDEL(conn, prefix):
+def makeGETorDEL(connManager, prefix):
     def do_call(self):
         table_name,data,qs,pk = self.parameters()
         where = ""
@@ -60,18 +79,21 @@ def makeGETorDEL(conn, prefix):
         query = f"{prefix} FROM {table_name} {where}"
         print(query)
         try:
-            cur = conn.cursor(dictionary=True)
+            conn = connManager.getConnection()
+            cur  = conn.cursor(dictionary=True)
             cur.execute(query)
             result = cur.fetchall()
             print(f"{json.dumps(result,default=str)}")
             self.send_success(result) 
+            cur.close()
+            conn.close()
         except Exception as e: 
             print("Database error",e)
             self.send_failure({'error':str(e)})
 
     return do_call
 
-def makePUT(conn):
+def makePUT(connManager):
     def do_PUT(self):
         table_name, data, _, _  = self.parameters()
         orderedKeys = sorted([k for k in data.keys() if data[k]])
@@ -79,10 +101,13 @@ def makePUT(conn):
         values      = ','.join([format_value(data[k]) for k in orderedKeys])
 
         try:
-            cur = conn.cursor()
+            conn = connManager.getConnection()
+            cur  = conn.cursor()
             print(f"INSERT INTO {table_name}({fields}) VALUES({values});")
             cur.execute(f"INSERT INTO {table_name}({fields}) VALUES({values});")
             self.send_success(data)
+            cur.close()
+            conn.close()
         except Exception as e: 
             print("Database error",e)
             self.send_failure({'error':str(e)})
@@ -92,25 +117,15 @@ def makePUT(conn):
 def run():
     # Might want to move to a pool of connections
     # https://mariadb-corporation.github.io/mariadb-connector-python/pool.html
-    try:
-        conn = mariadb.connect(
-            user="root",
-            password=os.environ["MARIADB_ROOT_PASSWORD"],
-            host=os.environ["FQDN"],
-            database=os.environ["MARIADB_DATABASE"],
-            port=3306
-        )
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
-        sys.exit(1)
-
+    # Connections seem to go away after a while, so instead open new ones as needed
+    connManager   = ConnectionManager(os.environ)
     server_class  = HTTPServer
     handler_class = RESTHandler
 
-    RESTHandler.do_GET    = makeGET(conn)
-    RESTHandler.do_PUT    = makePUTorDEL(conn,"SELECT *")
-    RESTHandler.do_DELETE = makePUTorDEL(conn,"DELETE")
-    RESTHandler.do_POST   = makePUT(conn)
+    RESTHandler.do_GET    = makeGETorDEL(connManager,"GET")
+    RESTHandler.do_DELETE = makeGETorDEL(connManager,"DELETE")
+    RESTHandler.do_PUT    = makePUT(connManager)
+    RESTHandler.do_POST   = makePUT(connManager)
 
     server_address = ('', 8000)
     httpd = server_class(server_address, handler_class)
