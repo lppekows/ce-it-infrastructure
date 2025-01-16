@@ -9,7 +9,7 @@ import urllib.parse
 import mariadb
 
 class ConnectionManager:
-    def __init__(self, envirot):
+    def __init__(self, environ):
         self.user     = "root"
         self.password = environ["MARIADB_ROOT_PASSWORD"]
         self.host     = environ["FQDN"]
@@ -18,11 +18,11 @@ class ConnectionManager:
     
     def getConnection(self):
         conn = mariadb.connect(
-                user     = self.user,
-                pasword  = self.password = os.environ["MARIADB_ROOT_PASSWORD"],
-                host     = self.host,
-                database = self.database,
-                port     = self.port
+                user      = self.user,
+                password  = self.password,
+                host      = self.host,
+                database  = self.database,
+                port      = self.port
         )
  
         return conn
@@ -122,7 +122,7 @@ def run():
     server_class  = HTTPServer
     handler_class = RESTHandler
 
-    RESTHandler.do_GET    = makeGETorDEL(connManager,"GET")
+    RESTHandler.do_GET    = makeGETorDEL(connManager,"SELECT *")
     RESTHandler.do_DELETE = makeGETorDEL(connManager,"DELETE")
     RESTHandler.do_PUT    = makePUT(connManager)
     RESTHandler.do_POST   = makePUT(connManager)
